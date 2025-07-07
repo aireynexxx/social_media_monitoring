@@ -1,0 +1,6 @@
+selenium
+pandas
+transformers
+torch
+tqdm
+joblib
