@@ -1,13 +1,18 @@
 import argparse
+import subprocess
 from analysis.mood_analyser import load_data, analyze
 from llm.report_generator import generate_report
 
 def run_pipeline(skip_scraping=True):
     if not skip_scraping:
-        from scrapers import gazeta_scraper, podrobno_scraper
-        print(" Scraping data...")
-        gazeta_scraper.run()
-        podrobno_scraper.run()
+        print(" Scraping Podrobno...")
+        subprocess.run(["python", "scrapers/podrobno_scraper.py"], check=True)
+
+        print(" Scraping Instagram...")
+        subprocess.run(["python", "scrapers/instagram_scraper.py"], check=True)
+
+        print(" Scraping Gazeta...")
+        subprocess.run(["python", "scrapers/gazeta_scraper.py"], check=True)
 
     print(" Analyzing mood...")
     articles, comments, emotions = load_data()

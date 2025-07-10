@@ -113,3 +113,12 @@ try:
 finally:
     driver.quit()
     conn.close()
+def run():
+    # Re-execute the same logic as if running the script directly
+    import __main__
+    if __main__.__file__.endswith("main.py"):
+        # Only run this if called from main pipeline
+        exec(open(__file__, encoding="utf-8").read())
+
+if __name__ == "__main__":
+    run()

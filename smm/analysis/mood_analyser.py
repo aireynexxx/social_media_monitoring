@@ -1,3 +1,5 @@
+# mood_analyser.py
+
 import sqlite3
 import pandas as pd
 import numpy as np
@@ -8,6 +10,7 @@ from torch.nn.functional import softmax
 from tqdm import tqdm
 import joblib
 import random
+import os
 
 def clean_text(text):
     if not isinstance(text, str):
@@ -30,9 +33,20 @@ def load_data():
     gaz_articles['article_id'] = gaz_articles['id'].astype(str) + 'gazeta'
     gaz_comments['article_id'] = gaz_comments['article_id'].astype(str) + 'gazeta'
 
+    # --- Instagram ---
+    insta_path = "data/instagram_comments.db"
+    if os.path.exists(insta_path):
+        insta_comments = pd.read_sql("SELECT * FROM comments", sqlite3.connect(insta_path))
+        insta_comments['source'] = 'instagram'
+        insta_comments['article_id'] = 'insta_' + insta_comments['id'].astype(str)
+        insta_comments = insta_comments.rename(columns={'comment': 'comment'})
+        insta_comments = insta_comments[['article_id', 'source', 'comment']]  # Keep it uniform
+    else:
+        insta_comments = pd.DataFrame(columns=['article_id', 'source', 'comment'])
+
     # --- Combine ---
     articles = pd.concat([gaz_articles, pod_articles], ignore_index=True)
-    comments = pd.concat([gaz_comments], ignore_index=True)
+    comments = pd.concat([gaz_comments[['article_id', 'comment']], insta_comments], ignore_index=True)
     emotions = pod_emotions.copy()
 
     return articles, comments, emotions
@@ -68,9 +82,9 @@ def analyze(articles, comments, emotions):
         return "neutral"
 
     counts['mood'] = counts.apply(get_mood, axis=1)
-
     articles = articles.merge(counts['mood'], left_on="article_id", right_index=True, how="left")
 
+    # --- Add emoji-based sentiment override (Podrobno only) ---
     emoji_sentiment_map = {
         'Нравится': 'positive', 'Восхищение': 'positive', 'Радость': 'positive',
         'Удивление': 'neutral',
@@ -86,7 +100,7 @@ def analyze(articles, comments, emotions):
 
     articles['mood'] = articles['mood'].fillna("no comment")
 
-    # Save outputs
+    # --- Save intermediate outputs ---
     joblib.dump(articles, "articles_df.pkl")
     joblib.dump(comments, "comments_df.pkl")
     joblib.dump(emotions_summary, "sentiment_summary_emotions.pkl")
@@ -103,7 +117,7 @@ def analyze(articles, comments, emotions):
         top_emotions = ['(эмоции не определены)']
 
     prompt = f"""
-Вы — аналитик Узбекского СМИ про Узбекистан, изучающий общественное мнение по поводу новостей и комментариев читателей на русском языке.
+Вы — аналитик Узбекского СМИ про Узбекистан, изучающий общественное мнение по поводу новостей и комментариев читателей на русском языке, поэтому используйте только русский язык.
 
 Напишите **аналитический отчет на русском языке** для представителей государства на основе следующих данных.
 
@@ -114,14 +128,9 @@ def analyze(articles, comments, emotions):
     - Нейтральное: {mood_counts.get('neutral', 0)}
     - Негативное: {mood_counts.get('negative', 0)}
 
-- Наиболее часто встречающиеся эмоции (по реакциям): {", ".join(top_emotions)}
-
-- Примеры комментариев пользователей:
-{chr(10).join(f'- "{c}"' for c in sampled_comments)}
-
 Задача:
-Составьте профессиональный и связный отчет на русском языке, в котором вы проанализируете общее настроение населения по отношению к текущим новостям. Упомяните эмоциональные тенденции, общие темы и возможные причины недовольства или поддержки. При необходимости переформулируйте или процитируйте пользовательские комментарии.
+Составьте профессиональный и связный отчет на **русском** языке, в котором вы проанализируете общее настроение населения по отношению к текущим новостям. Упомяните эмоциональные тенденции, общие темы и возможные причины недовольства или поддержки. При необходимости переформулируйте или редко процитируйте уместные пользовательские комментарии.
     """.strip()
 
-    with open("prompt.txt", "w", encoding="utf-8") as f:
+    with open("reports/prompt.txt", "w", encoding="utf-8") as f:
         f.write(prompt)

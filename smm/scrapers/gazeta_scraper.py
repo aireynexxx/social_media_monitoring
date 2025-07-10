@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS comments (
 
 conn.commit()
 
-max_pages = 5  # Set max pages you want to scrape
+max_pages = 1  # Set max pages you want to scrape
 current_page = 1
 
 try:
@@ -140,3 +140,12 @@ try:
 finally:
     driver.quit()
     conn.close()
+def run():
+    # Re-execute the same logic as if running the script directly
+    import __main__
+    if __main__.__file__.endswith("main.py"):
+        # Only run this if called from main pipeline
+        exec(open(__file__, encoding="utf-8").read())
+
+if __name__ == "__main__":
+    run()

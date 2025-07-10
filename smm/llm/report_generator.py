@@ -1,11 +1,9 @@
 import subprocess
 
 def generate_report():
-    with open("prompt.txt", "r", encoding="utf-8") as f:
+    with open("reports/prompt.txt", "r", encoding="utf-8") as f:
         prompt = f.read()
 
-    print("=== PROMPT ===")
-    print(prompt)
 
     result = subprocess.run(
         'type prompt.txt | ollama run llama3',
@@ -21,7 +19,7 @@ def generate_report():
     if stdout:
         print("\n=== Russian Mood Report ===\n")
         print(stdout)
-        with open("report/mood_report.md", "w", encoding="utf-8") as f:
+        with open("reports/mood_report.md", "w", encoding="utf-8") as f:
             f.write(stdout)
     else:
         print("\n No output from Ollama.")
