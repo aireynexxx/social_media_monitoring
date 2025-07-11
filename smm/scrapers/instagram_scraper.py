@@ -4,6 +4,7 @@ import sqlite3
 import os
 import time
 import random
+import re
 from selenium import webdriver
 import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
@@ -33,10 +34,7 @@ CREATE TABLE IF NOT EXISTS comments (
     post_url TEXT,
     post_caption TEXT,
     username TEXT,
-    comment TEXT,
-    sentiment_label TEXT,
-    sentiment_score REAL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    comment TEXT
 )
 """)
 conn.commit()
@@ -64,6 +62,18 @@ def login():
     human_typing(driver.find_element(By.NAME, "password"), PASSWORD)
     driver.find_element(By.NAME, "password").send_keys(Keys.RETURN)
     time.sleep(random.uniform(10, 12))
+
+def is_emojis(text):
+    # Remove all emoji-like unicode symbols and whitespace
+    cleaned = re.sub(r'[^\w\s]', '', text)  # Remove symbols/punctuation
+    cleaned = re.sub(r'\s+', '', cleaned)  # Remove whitespace
+    return cleaned == ''
+
+def less_than_twelve(text):
+    return len(text) <= 12
+
+def is_mention_only(text):
+    return re.fullmatch(r"(?:@\w+\s*)+", text.strip()) is not None
 
 def scrape_posts(username):
     driver.get(f"https://www.instagram.com/{username}/")
@@ -107,6 +117,8 @@ def scrape_posts(username):
                     commenter = username_elem.text
                 except:
                     commenter = "(unknown)"
+                if is_emojis(comment.text) or less_than_twelve(comment.text) or is_mention_only(comment.text):
+                    continue
 
                 comment_text = comment.text.strip()
 

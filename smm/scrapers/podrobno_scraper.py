@@ -63,6 +63,7 @@ try:
     for idx, url in enumerate(article_urls):
         print(f"\n[{idx+1}/{len(article_urls)}] Scraping: {url}")
         driver.get(url)
+        time.sleep(1)
 
         try:
             wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "h1.post-title")))
