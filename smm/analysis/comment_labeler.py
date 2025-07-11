@@ -40,9 +40,9 @@ def call_topic_classifier(caption, comments):
         return ["прочее"]
 
 # === PREP OUTPUT DB ===
-if os.path.exists(OUTPUT_DB):
+'''if os.path.exists(OUTPUT_DB):
     print(f"🗑️ Deleting existing database: {OUTPUT_DB}")
-    os.remove(OUTPUT_DB)
+    os.remove(OUTPUT_DB)'''
 
 print("📥 Loading Instagram Comments DB...")
 conn = sqlite3.connect(INPUT_DB)
