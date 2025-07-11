@@ -16,15 +16,15 @@ MAX_COMMENTS = 50
 OLLAMA_MODEL = "llama3.1:8b"
 
 # === CLEAN OUTPUT DB IF EXISTS ===
-if os.path.exists(OUTPUT_DB):
+'''if os.path.exists(OUTPUT_DB):
     print(f"🗑️ Deleting existing database: {OUTPUT_DB}")
-    os.remove(OUTPUT_DB)
+    os.remove(OUTPUT_DB)'''
 
 # === ENSURE PROMPT DIR EXISTS ===
 os.makedirs(PROMPT_DIR, exist_ok=True)
 
 # === OLLAMA CHAT FUNCTION ===
-def call_llama3_chat(prompt: str, model: str = OLLAMA_MODEL) -> str:
+def call_llm(prompt: str, model: str = OLLAMA_MODEL) -> str:
     try:
         response = ollama.chat(
             model=model,
@@ -93,6 +93,8 @@ for post_url, group in tqdm(post_groups, desc="Summarizing posts"):
 - Основную тему поста
 - Общее настроение и реакцию людей
 - Конкретные примеры или тенденции, если они есть
+
+Будьте прямолинейны и прямолинейны в своих выводах и заключениях.
 """
 
     # === SAVE PROMPT FOR DEBUGGING ===
@@ -101,7 +103,7 @@ for post_url, group in tqdm(post_groups, desc="Summarizing posts"):
         f.write(prompt.strip())
 
     # === CALL OLLAMA CHAT ===
-    summary = call_llama3_chat(prompt)
+    summary = call_llm(prompt)
 
     # === STORE RESULT ===
     out_cursor.execute("""
