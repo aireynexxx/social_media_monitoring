@@ -12,6 +12,46 @@ import joblib
 import random
 import os
 
+def delete_irrelevant( db_path='instagram_comments.db'):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    keywords = [
+        # English
+        "uzbekistan", "tashkent", "government", "mirziyoyev", "reform", "tax", "taxes",
+        "economy", "salary", "price", "healthcare", "education", "internet", "protest",
+        "explosion", "accident", "fire", "rights", "law", "election", "police", "corruption",
+        "job", "jobs", "employee", "employment", "tariffs", "tarif",
+
+        # Russian
+        "Узбекистан", "Ташкент", "правительство", "Мирзиёев", "реформа", "налог", "налоги",
+        "экономика", "зарплата", "цена", "здравоохранение", "образование", "интернет", "протест",
+        "взрыв", "авария", "пожар", "права", "закон", "выборы", "полиция", "коррупция",
+        "работа", "рабочие места", "работник", "занятость", "тарифы", "тариф",
+
+        # Uzbek (Latin script)
+        "o'zbekiston", "toshkent", "hukumat", "mirziyoyev", "islohot", "soliq", "soliqlar",
+        "iqtisod", "maosh", "narx", "sog'liqni saqlash", "ta'lim", "internet", "norozilik",
+        "portlash", "avariya", "yong'in", "huquqlar", "qonun", "saylov", "politsiya",
+        "korruptsiya", "ish", "xodim", "bandlik", "tariflar", "tarif"
+    ]
+
+    like_clauses = " OR ".join([f"post_caption LIKE ?" for _ in keywords])
+    params = [f"%{kw}%" for kw in keywords]
+
+    query = f"""
+    DELETE FROM comments
+    WHERE NOT ({like_clauses})
+    """
+    cursor.execute(query, params)
+    deleted_count = cursor.rowcount
+    conn.commit()
+    conn.close()
+
+    print(f'Deleted {deleted_count} comments.')
+
+
+
 def clean_text(text):
     if not isinstance(text, str):
         return ""
@@ -35,6 +75,9 @@ def load_data():
 
     # --- Instagram ---
     insta_path = "data/instagram_comments.db"
+
+    delete_irrelevant(insta_path)
+
     if os.path.exists(insta_path):
         insta_comments = pd.read_sql("SELECT * FROM comments", sqlite3.connect(insta_path))
         insta_comments['source'] = 'instagram'
