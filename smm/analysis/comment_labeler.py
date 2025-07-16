@@ -34,41 +34,42 @@ def call_topic_classifier(caption, comments):
                 {"role": "user", "content": prompt}
             ]
         )
-        return [t.strip().lower() for t in response['message']['content'].split(',') if t.strip()]
+        return response['message']['content'].strip().lower().rstrip('.')
     except Exception as e:
         print("⚠️ Ошибка при классификации темы:", e)
         return ["прочее"]
 
-# === PREP OUTPUT DB ===
-'''if os.path.exists(OUTPUT_DB):
-    print(f"🗑️ Deleting existing database: {OUTPUT_DB}")
-    os.remove(OUTPUT_DB)'''
+def label():
+    # === PREP OUTPUT DB ===
+    if os.path.exists(OUTPUT_DB):
+        print(f"🗑️ Deleting existing database: {OUTPUT_DB}")
+        os.remove(OUTPUT_DB)
 
-print("📥 Loading Instagram Comments DB...")
-conn = sqlite3.connect(INPUT_DB)
-df = pd.read_sql("SELECT * FROM comments", conn)
-conn.close()
+    print("📥 Loading Instagram Comments DB...")
+    conn = sqlite3.connect(INPUT_DB)
+    df = pd.read_sql("SELECT * FROM comments", conn)
+    conn.close()
 
-# === GROUP BY POST AND TAG ===
-print("🏷️ Classifying topics for each post and tagging comments...")
-post_groups = df.groupby("post_url")
-all_tagged_rows = []
+    # === GROUP BY POST AND TAG ===
+    print("🏷️ Classifying topics for each post and tagging comments...")
+    post_groups = df.groupby("post_url")
+    all_tagged_rows = []
 
-for post_url, group in tqdm(post_groups, desc="Tagging topics"):
-    caption = group["post_caption"].iloc[0]
-    comments = group["comment"].dropna().astype(str).tolist()
-    topics = call_topic_classifier(caption, comments)
+    for post_url, group in tqdm(post_groups, desc="Tagging topics"):
+        caption = group["post_caption"].iloc[0]
+        comments = group["comment"].dropna().astype(str).tolist()
+        topics = call_topic_classifier(caption, comments)
 
-    for _, row in group.iterrows():
-        row_dict = row.to_dict()
-        row_dict["topics"] = ", ".join(topics)
-        all_tagged_rows.append(row_dict)
+        for _, row in group.iterrows():
+            row_dict = row.to_dict()
+            row_dict["topics"] = ", ".join(topics)
+            all_tagged_rows.append(row_dict)
 
-# === SAVE TO NEW DB ===
-print("💾 Saving tagged comments...")
-tagged_df = pd.DataFrame(all_tagged_rows)
-conn_out = sqlite3.connect(OUTPUT_DB)
-tagged_df.to_sql("comments", conn_out, index=False, if_exists="replace")
-conn_out.close()
+    # === SAVE TO NEW DB ===
+    print("💾 Saving tagged comments...")
+    tagged_df = pd.DataFrame(all_tagged_rows)
+    conn_out = sqlite3.connect(OUTPUT_DB)
+    tagged_df.to_sql("comments", conn_out, index=False, if_exists="replace")
+    conn_out.close()
 
-print("✅ Комментарии размечены темами и сохранены в:", OUTPUT_DB)
+    print("✅ Комментарии размечены темами и сохранены в:", OUTPUT_DB)
