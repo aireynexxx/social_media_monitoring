@@ -16,11 +16,13 @@ from selenium.webdriver.support import expected_conditions as EC
 USERNAME = input('Instagram Username: ')
 PASSWORD = input('Instagram Password: ')
 
-TARGET_PROFILES = ['repost.uz']
-##, 'uznews', 'upl_uz', 'podrobno.uz'
+TARGET_PROFILES = ['repost.uz', 'uznews', 'upl_uz', 'podrobno.uz']
+##,
 
 DB_PATH = 'data/instagram_comments.db'
-os.makedirs('data', exist_ok=True)
+if os.path.exists(DB_PATH):
+    print(f"🗑️ Deleting existing database: {DB_PATH}")
+    os.remove(DB_PATH)
 
 conn = sqlite3.connect(DB_PATH)
 conn.execute("PRAGMA encoding = 'UTF-8';")
@@ -79,9 +81,9 @@ def scrape_posts(username):
     driver.get(f"https://www.instagram.com/{username}/")
     time.sleep(random.uniform(3, 6))
 
-    #for y in range(1000, 1000, 1000):
-    #    driver.execute_script(f"window.scrollTo(0, {y});")
-     #   time.sleep(random.uniform(4, 8))
+    for y in range(1000, 3000, 1000):
+        driver.execute_script(f"window.scrollTo(0, {y});")
+        time.sleep(random.uniform(4, 8))
 
     posts = driver.find_elements(By.CSS_SELECTOR, "a[href*='/p/']")
     post_links = [post.get_attribute('href') for post in posts]
