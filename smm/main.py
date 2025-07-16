@@ -2,8 +2,8 @@ import argparse
 import subprocess
 from analysis.mood_analyser import load_data, analyze
 from llm.report_generator import generate_report
-from analysis.comment_labeler import label
-from analysis.post_summarizer import summarize
+from analysis.insta_comment_labeler import label
+from analysis.insta_post_summarizer import summarize
 
 def run_pipeline(skip_scraping=True):
     if not skip_scraping:

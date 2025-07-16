@@ -1,4 +1,4 @@
-# post_summarizer.py
+# insta_post_summarizer.py
 
 import sqlite3
 import pandas as pd

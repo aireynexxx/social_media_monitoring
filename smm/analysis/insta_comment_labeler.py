@@ -1,4 +1,4 @@
-# comment_labeler.py
+# insta_comment_labeler.py
 
 import sqlite3
 import pandas as pd
@@ -34,10 +34,11 @@ def call_topic_classifier(caption, comments):
                 {"role": "user", "content": prompt}
             ]
         )
-        return response['message']['content'].strip().lower().rstrip('.')
+        return response['message']['content'].strip().replace(",", "").replace(" ", "").lower()
     except Exception as e:
         print("⚠️ Ошибка при классификации темы:", e)
-        return ["прочее"]
+        return "прочее"
+
 
 def label():
     # === PREP OUTPUT DB ===
@@ -62,7 +63,7 @@ def label():
 
         for _, row in group.iterrows():
             row_dict = row.to_dict()
-            row_dict["topics"] = ", ".join(topics)
+            row_dict["topics"] = topics
             all_tagged_rows.append(row_dict)
 
     # === SAVE TO NEW DB ===

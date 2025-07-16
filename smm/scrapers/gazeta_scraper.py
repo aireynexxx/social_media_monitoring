@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from urllib.parse import urljoin
+import os
 import time
 
 BASE_URL = "https://www.gazeta.uz"
@@ -18,7 +19,15 @@ options.add_argument("--window-size=1920,1080")
 driver = webdriver.Chrome(options=options)
 wait = WebDriverWait(driver, 5)
 
-conn = sqlite3.connect("data/gazeta_articles.db")
+DB_PATH = "data/gazeta_articles.db"
+
+
+
+if os.path.exists(DB_PATH):
+    print(f"🗑️ Deleting existing database: {DB_PATH}")
+    os.remove(DB_PATH)
+
+conn = sqlite3.connect(DB_PATH)
 conn.execute("PRAGMA encoding = 'UTF-8';")
 cursor = conn.cursor()
 

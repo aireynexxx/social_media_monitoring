@@ -81,7 +81,7 @@ def scrape_posts(username):
     driver.get(f"https://www.instagram.com/{username}/")
     time.sleep(random.uniform(3, 6))
 
-    for y in range(1000, 3000, 1000):
+    for y in range(1000, 6000, 1000):
         driver.execute_script(f"window.scrollTo(0, {y});")
         time.sleep(random.uniform(4, 8))
 
