@@ -53,11 +53,11 @@ def generate_summary(article, comments):
 
 # === Main summarization routine ===
 def summarize_articles():
-    print("📥 Загружаем данные из обеих баз данных...")
+    print("Загружаем данные из обеих баз данных...")
     gazeta_articles, gazeta_comments = load_articles_and_comments(GAZETA_DB, "articles", "comments")
     podrobno_articles, podrobno_comments = load_articles_and_comments(PODROBNO_DB, "articles", "comments")
 
-    print("🗃️ Подготовка базы данных итогов...")
+    print("Подготовка базы данных итогов...")
 
     # Standardize and combine
     gazeta_articles["source"] = "gazeta"
@@ -76,7 +76,7 @@ def summarize_articles():
     article_ids_with_comments = set(all_comments['article_id'].unique())
     all_articles = all_articles[all_articles['id'].isin(article_ids_with_comments)]
 
-    print(f"🧠 Начинаем генерацию обзоров для {len(all_articles)} статей с комментариями...")
+    print(f"Начинаем генерацию обзоров для {len(all_articles)} статей с комментариями...")
     summaries = []
 
     for _, article_row in tqdm(all_articles.iterrows(), total=len(all_articles), desc="Summarizing articles"):
@@ -109,12 +109,12 @@ def summarize_articles():
         print(f"🗑️ Deleting existing database: {OUTPUT_DB}")
         os.remove(OUTPUT_DB)
 
-    print(f"💾 Сохраняем в {OUTPUT_DB}...")
+    print(f"Сохраняем в {OUTPUT_DB}...")
     conn_out = sqlite3.connect(OUTPUT_DB)
     pd.DataFrame(summaries).to_sql("summaries", conn_out, index=False)
     conn_out.close()
 
-    print("✅ Обзоры статей успешно сохранены!")
+    print("Обзоры статей успешно сохранены!")
 
 # === Entry point ===
 if __name__ == "__main__":

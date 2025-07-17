@@ -157,6 +157,21 @@ def analyze(articles, comments, emotions):
     else:
         insta_summaries = "Instagram-данные отсутствуют."
 
+    # === Article Summaries Block ===
+    article_summary_path = "data/article_summaries.db"
+    if os.path.exists(article_summary_path):
+        article_summary_conn = sqlite3.connect(article_summary_path)
+        article_summary_df = pd.read_sql("SELECT * FROM summaries", article_summary_conn)
+        article_summary_conn.close()
+
+        article_summary_texts = article_summary_df["summary"].dropna().tolist()
+        random.seed(42)
+        random.shuffle(article_summary_texts)
+        article_summaries = "\n\n".join(f"- {s.strip()}" for s in article_summary_texts[:5]) if article_summary_texts else "Нет сводок по статьям."
+    else:
+        article_summaries = "Сводки по статьям отсутствуют."
+
+
 
     # --- Save intermediate outputs ---
     joblib.dump(articles, "articles_df.pkl")
@@ -188,6 +203,9 @@ def analyze(articles, comments, emotions):
     
 Краткие аналитические сводки по постам Instagram:
 {insta_summaries}
+
+Краткие аналитические сводки по статьям СМИ:
+{article_summaries}
 
 Задача:
 Составьте профессиональный и связный отчет на **русском** языке, в котором вы проанализируете общее настроение населения по отношению к текущим новостям. Упомяните эмоциональные тенденции, общие темы и возможные причины недовольства или поддержки. При необходимости переформулируйте или редко процитируйте уместные пользовательские комментарии.

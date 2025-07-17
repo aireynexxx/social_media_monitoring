@@ -6,7 +6,7 @@ def generate_report():
 
 
     result = subprocess.run(
-        'type prompt.txt | ollama run llama3',
+        'type prompt.txt | ollama run llama3.1:8b',
         shell=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

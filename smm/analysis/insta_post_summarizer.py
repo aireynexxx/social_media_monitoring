@@ -33,7 +33,7 @@ def call_llm(prompt: str, model: str = OLLAMA_MODEL) -> str:
         print("⚠️ Ошибка при вызове Ollama:", e)
         return "[ERROR: Не удалось получить ответ от модели]"
 
-def summarize():
+def summarize_insta():
     # === VERIFY DB EXISTS ===
     if not os.path.exists(INSTAGRAM_DB):
         raise FileNotFoundError(f"Файл базы данных не найден: {INSTAGRAM_DB}")
