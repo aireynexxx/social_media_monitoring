@@ -7,11 +7,11 @@ from analysis.insta_post_summarizer import summarize
 
 def run_pipeline(skip_scraping=True):
     if not skip_scraping:
-        print(" Scraping Podrobno...")
-        subprocess.run(["python", "scrapers/podrobno_scraper.py"], check=True)
-
         print(" Scraping Instagram...")
         subprocess.run(["python", "scrapers/instagram_scraper.py"], check=True)
+
+        print(" Scraping Podrobno...")
+        subprocess.run(["python", "scrapers/podrobno_scraper.py"], check=True)
 
         print(" Scraping Gazeta...")
         subprocess.run(["python", "scrapers/gazeta_scraper.py"], check=True)
