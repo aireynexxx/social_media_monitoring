@@ -21,19 +21,19 @@ def delete_irrelevant( db_path='instagram_comments.db'):
         "uzbekistan", "tashkent", "government", "mirziyoyev", "reform", "tax", "taxes",
         "economy", "salary", "price", "healthcare", "education", "internet", "protest",
         "explosion", "accident", "fire", "rights", "law", "election", "police", "corruption",
-        "job", "jobs", "employee", "employment", "tariffs", "tarif", "USA", "America"
+        "job", "jobs", "employee", "employment", "tariffs", "tarif",
 
         # Russian
         "Узбекистан", "Ташкент", "правительство", "Мирзиёев", "реформа", "налог", "налоги",
         "экономика", "зарплата", "цена", "здравоохранение", "образование", "интернет", "протест",
         "взрыв", "авария", "пожар", "права", "закон", "выборы", "полиция", "коррупция",
-        "работа", "рабочие места", "работник", "занятость", "тарифы", "тариф", "США", "Америка"
+        "работа", "рабочие места", "работник", "занятость", "тарифы", "тариф",
 
         # Uzbek (Latin script)
         "o'zbekiston", "toshkent", "hukumat", "mirziyoyev", "islohot", "soliq", "soliqlar",
         "iqtisod", "maosh", "narx", "sog'liqni saqlash", "ta'lim", "internet", "norozilik",
         "portlash", "avariya", "yong'in", "huquqlar", "qonun", "saylov", "politsiya",
-        "korruptsiya", "ish", "xodim", "bandlik", "tariflar", "tarif", "Amerika"
+        "korruptsiya", "ish", "xodim", "bandlik", "tariflar", "tarif",
     ]
 
     like_clauses = " OR ".join([f"post_caption LIKE ?" for _ in keywords])
@@ -144,24 +144,24 @@ def analyze(articles, comments, emotions):
     articles['mood'] = articles['mood'].fillna("no comment")
 
     # === Instagram Summaries Block ===
-    summary_path = "data/instagram_summaries.db"
-    if os.path.exists(summary_path):
-        summary_conn = sqlite3.connect(summary_path)
-        summary_df = pd.read_sql("SELECT * FROM post_summaries", summary_conn)
-        summary_conn.close()
+    insta_summary_path = "data/instagram_summaries.db"
+    if os.path.exists(insta_summary_path):
+        insta_summary_conn = sqlite3.connect(insta_summary_path)
+        insta_summary_df = pd.read_sql("SELECT * FROM post_summaries", insta_summary_conn)
+        insta_summary_conn.close()
 
-        summary_texts = summary_df["summary"].dropna().tolist()
+        insta_summary_texts = insta_summary_df["summary"].dropna().tolist()
         random.seed(42)
-        random.shuffle(summary_texts)
-        top_summaries = "\n\n".join(f"- {s.strip()}" for s in summary_texts[:5]) if summary_texts else "Нет Instagram-сводок."
+        random.shuffle(insta_summary_texts)
+        insta_summaries = "\n\n".join(f"- {s.strip()}" for s in insta_summary_texts[:5]) if insta_summary_texts else "Нет Instagram-сводок."
     else:
-        top_summaries = "Instagram-данные отсутствуют."
+        insta_summaries = "Instagram-данные отсутствуют."
 
 
     # --- Save intermediate outputs ---
     joblib.dump(articles, "articles_df.pkl")
     joblib.dump(comments, "comments_df.pkl")
-    joblib.dump(emotions_summary, "sentiment_summary_emotions.pkl")
+    joblib.dump(emotions_summary, "sentiment_insta_summary_emotions.pkl")
 
     # === Generate Prompt for LLM ===
     mood_counts = articles['mood'].value_counts().to_dict()
@@ -187,7 +187,7 @@ def analyze(articles, comments, emotions):
     - Негативное: {mood_counts.get('negative', 0)}
     
 Краткие аналитические сводки по постам Instagram:
-{top_summaries}
+{insta_summaries}
 
 Задача:
 Составьте профессиональный и связный отчет на **русском** языке, в котором вы проанализируете общее настроение населения по отношению к текущим новостям. Упомяните эмоциональные тенденции, общие темы и возможные причины недовольства или поддержки. При необходимости переформулируйте или редко процитируйте уместные пользовательские комментарии.

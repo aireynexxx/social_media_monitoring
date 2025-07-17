@@ -20,7 +20,7 @@ def run_pipeline(skip_scraping=True):
     articles, comments, emotions = load_data()
     analyze(articles, comments, emotions)
     summarize()
-    label()
+    #label()
 
 
 
