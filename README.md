@@ -120,4 +120,4 @@ Generates a structured LLM-based report summarizing:
 
 ## 📬 Contact
 
-Created by [Diana Shadibaeva and Tyson Watson] – contributions and feedback welcome!
+Created by Diana Shadibaeva and Tyson Watson – contributions and feedback welcome!
