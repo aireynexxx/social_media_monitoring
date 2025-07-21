@@ -5,7 +5,7 @@ from llm.report_generator import generate_report
 from analysis.insta_comment_labeler import label
 from analysis.insta_post_summarizer import summarize_insta
 from analysis.article_summarizer import summarize_articles
-
+from analysis.insta_comment_labeler import insta_sentiment
 def run_pipeline(do_scraping=False, do_analysis=False):
     if do_scraping:
         print(" Scraping Instagram...")
@@ -20,9 +20,11 @@ def run_pipeline(do_scraping=False, do_analysis=False):
     if do_analysis:
         print(" Analyzing data...")
         articles, comments, emotions = load_data()
+        insta_sentiment()
         analyze(articles, comments, emotions)
-        summarize_insta()
-        summarize_articles()
+        #summarize_insta()
+        #summarize_articles()
+
     print(" Generating report...")
     generate_report()
 

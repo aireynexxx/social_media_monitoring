@@ -11,11 +11,13 @@ def insta_sentiment():
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     INPUT_DB = os.path.join(BASE_DIR, "data", "instagram_comments.db")
     OUTPUT_DB = os.path.join(BASE_DIR, "data", "instagram_sentiment.db")
+    AVG_DB = os.path.join(BASE_DIR, "data", "instagram_avg_sentiment.db")
 
-    # Remove output DB if it exists
-    if os.path.exists(OUTPUT_DB):
-        print(f"🗑️ Deleting existing database: {OUTPUT_DB}")
-        os.remove(OUTPUT_DB)
+    # Remove output DBs if they exist
+    for db_path in [OUTPUT_DB, AVG_DB]:
+        if os.path.exists(db_path):
+            print(f"🗑️ Deleting existing database: {db_path}")
+            os.remove(db_path)
 
     # Load tokenizer and model
     tokenizer = AutoTokenizer.from_pretrained("blanchefort/rubert-base-cased-sentiment")
@@ -44,9 +46,25 @@ def insta_sentiment():
     tqdm.pandas(desc="🔍 Analyzing sentiment")
     df["sentiment"] = df["comment"].progress_apply(classify_sentiment)
 
-    # Save result to output DB
+    # Save sentiment-labeled comments
     conn_out = sqlite3.connect(OUTPUT_DB)
     df.to_sql("comments_with_sentiment", conn_out, index=False, if_exists="replace")
     conn_out.close()
-
     print(f"✅ Sentiment-labeled data saved to {OUTPUT_DB}")
+
+    # Compute majority sentiment per post
+    majority_df = (
+        df.groupby("post_caption")["sentiment"]
+        .agg(lambda x: x.value_counts().idxmax())
+        .reset_index()
+        .rename(columns={"sentiment": "average_sentiment"})
+    )
+
+    # Save to new DB
+    conn_avg = sqlite3.connect(AVG_DB)
+    majority_df.to_sql("average_sentiment", conn_avg, index=False, if_exists="replace")
+    conn_avg.close()
+    print(f"📊 Majority sentiment per post saved to {AVG_DB}")
+
+if __name__ == "__main__":
+    insta_sentiment()

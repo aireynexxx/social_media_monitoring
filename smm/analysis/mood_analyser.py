@@ -171,6 +171,20 @@ def analyze(articles, comments, emotions):
     else:
         article_summaries = "Сводки по статьям отсутствуют."
 
+    # === Comment Sentiment Block ===
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    SENTIMENT_DB = os.path.join(BASE_DIR, "data", "instagram_avg_sentiment.db")
+
+    # Connect and load the average sentiment table
+    conn = sqlite3.connect(SENTIMENT_DB)
+    avg_df = pd.read_sql_query("SELECT * FROM average_sentiment", conn)
+    conn.close()
+
+    average_sentiment_text = "\n".join(f"Этот пост: {row['post_caption']}, вызвал такую реакцию: {row['average_sentiment']}"
+    for _, row in avg_df.iterrows())
+
+
+
 
 
     # --- Save intermediate outputs ---
@@ -194,7 +208,7 @@ def analyze(articles, comments, emotions):
 
 Напишите **аналитический отчет на русском языке** для представителей государства на основе следующих данных.
 
-
+{average_sentiment_text}
 
 Задача:
 Составьте профессиональный и связный отчет на **русском** языке, в котором вы проанализируете общее настроение населения по отношению к текущим новостям. Упомяните эмоциональные тенденции, общие темы и возможные причины недовольства или поддержки. При необходимости переформулируйте или редко процитируйте уместные пользовательские комментарии.
